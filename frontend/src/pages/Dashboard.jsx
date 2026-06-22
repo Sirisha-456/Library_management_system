@@ -52,7 +52,7 @@ const Dashboard = () => {
                                 <BookOpen size={24} />
                             </div>
                             <div className="stat-info">
-                                <span className="stat-label">Total Books</span>
+                                <span className="stat-label">Total Copies</span>
                                 <span className="stat-value">{totalBooksCount}</span>
                             </div>
                         </div>
@@ -62,7 +62,7 @@ const Dashboard = () => {
                                 <BookOpen size={24} />
                             </div>
                             <div className="stat-info">
-                                <span className="stat-label">Unique Titles</span>
+                                <span className="stat-label">Unique Books</span>
                                 <span className="stat-value">{uniqueTitles}</span>
                             </div>
                         </div>
