@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { BookOpen, Tag, AlertTriangle, ArrowRight, User } from "lucide-react";
+import { BookOpen, Tag, AlertTriangle, ArrowRight } from "lucide-react";
 
 const Dashboard = () => {
     const { user } = useContext(AuthContext);

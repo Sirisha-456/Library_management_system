@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Plus, Search, Edit2, Trash2, X, AlertCircle } from "lucide-react";
 
@@ -24,7 +24,6 @@ const BookCatalog = () => {
     const [submitting, setSubmitting] = useState(false);
 
     const fetchBooks = async () => {
-        setLoading(true);
         try {
             const response = await fetch("http://localhost:5000/api/books");
             if (response.ok) {
@@ -33,7 +32,7 @@ const BookCatalog = () => {
             } else {
                 setError("Failed to fetch books from server");
             }
-        } catch (error) {
+        } catch {
             setError("Server connection error. Is the backend running?");
         } finally {
             setLoading(false);
@@ -41,6 +40,7 @@ const BookCatalog = () => {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchBooks();
     }, []);
 
@@ -110,7 +110,7 @@ const BookCatalog = () => {
             } else {
                 setError(data.message || "Failed to process book operation");
             }
-        } catch (error) {
+        } catch {
             setError("Network connection failure");
         } finally {
             setSubmitting(false);
@@ -142,7 +142,7 @@ const BookCatalog = () => {
             } else {
                 setError(data.message || "Failed to delete book");
             }
-        } catch (error) {
+        } catch {
             setError("Network connection failure");
         }
     };

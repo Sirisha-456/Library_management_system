@@ -1,23 +1,22 @@
-import React, { createContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useState } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
+    const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem("library_user");
         if (storedUser) {
             try {
-                setUser(JSON.parse(storedUser));
+                return JSON.parse(storedUser);
             } catch (e) {
                 console.error("Error parsing stored user info:", e);
                 localStorage.removeItem("library_user");
             }
         }
-        setLoading(false);
-    }, []);
+        return null;
+    });
+    const loading = false;
 
     const login = async (email, password) => {
         try {
@@ -38,7 +37,7 @@ export const AuthProvider = ({ children }) => {
             } else {
                 return { success: false, message: data.message || "Invalid login credentials" };
             }
-        } catch (error) {
+        } catch {
             return { success: false, message: "Server connection failed" };
         }
     };
@@ -62,7 +61,7 @@ export const AuthProvider = ({ children }) => {
             } else {
                 return { success: false, message: data.message || "Registration failed" };
             }
-        } catch (error) {
+        } catch {
             return { success: false, message: "Server connection failed" };
         }
     };
