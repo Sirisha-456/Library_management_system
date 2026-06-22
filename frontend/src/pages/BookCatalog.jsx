@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Plus, Search, Edit2, Trash2, X, AlertCircle } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, AlertCircle, Eye } from "lucide-react";
+import BookModal from "../components/BookModal";
 
 const BookCatalog = () => {
     const { user } = useContext(AuthContext);
@@ -14,14 +15,7 @@ const BookCatalog = () => {
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
-    const [selectedBookId, setSelectedBookId] = useState(null);
-
-    // Form fields
-    const [title, setTitle] = useState("");
-    const [author, setAuthor] = useState("");
-    const [category, setCategory] = useState("");
-    const [quantity, setQuantity] = useState(1);
-    const [submitting, setSubmitting] = useState(false);
+    const [selectedBook, setSelectedBook] = useState(null);
 
     const fetchBooks = async () => {
         try {
@@ -46,75 +40,32 @@ const BookCatalog = () => {
 
     const handleOpenAddModal = () => {
         setModalMode("add");
-        setTitle("");
-        setAuthor("");
-        setCategory("");
-        setQuantity(1);
-        setError("");
+        setSelectedBook(null);
         setIsModalOpen(true);
     };
 
     const handleOpenEditModal = (book) => {
         setModalMode("edit");
-        setSelectedBookId(book._id);
-        setTitle(book.title);
-        setAuthor(book.author);
-        setCategory(book.category || "");
-        setQuantity(book.quantity || 0);
-        setError("");
+        setSelectedBook(book);
+        setIsModalOpen(true);
+    };
+
+    const handleOpenViewModal = (book) => {
+        setModalMode("view");
+        setSelectedBook(book);
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setSelectedBookId(null);
+        setSelectedBook(null);
     };
 
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setSuccess("");
-
-        if (!title || !author) {
-            setError("Title and Author are required fields");
-            return;
-        }
-
-        setSubmitting(true);
-        
-        const url = modalMode === "add" 
-            ? "http://localhost:5000/api/books" 
-            : `http://localhost:5000/api/books/${selectedBookId}`;
-            
-        const method = modalMode === "add" ? "POST" : "PUT";
-
-        try {
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${user.token}`
-                },
-                body: JSON.stringify({ title, author, category, quantity })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess(`Book successfully ${modalMode === "add" ? "added" : "updated"}`);
-                handleCloseModal();
-                fetchBooks();
-                
-                // Clear success toast after 3s
-                setTimeout(() => setSuccess(""), 3000);
-            } else {
-                setError(data.message || "Failed to process book operation");
-            }
-        } catch {
-            setError("Network connection failure");
-        } finally {
-            setSubmitting(false);
-        }
+    const handleModalSuccess = (msg) => {
+        setSuccess(msg);
+        handleCloseModal();
+        fetchBooks();
+        setTimeout(() => setSuccess(""), 3000);
     };
 
     const handleDeleteBook = async (id, bookTitle) => {
@@ -233,6 +184,14 @@ const BookCatalog = () => {
 
                                 <div className="book-actions">
                                     <button 
+                                        className="action-btn view" 
+                                        onClick={() => handleOpenViewModal(book)} 
+                                        title="View Book Details"
+                                        style={{ marginRight: "4px" }}
+                                    >
+                                        <Eye size={16} />
+                                    </button>
+                                    <button 
                                         className="action-btn edit" 
                                         onClick={() => handleOpenEditModal(book)} 
                                         title="Edit Book Details"
@@ -253,92 +212,14 @@ const BookCatalog = () => {
                 </div>
             )}
 
-            {/* Add/Edit Modal */}
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="card modal-content">
-                        <div style={{ display: "flex", justifyContent: "between", alignItems: "center", marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1.4rem", fontWeight: "700", flex: 1 }}>
-                                {modalMode === "add" ? "Add Book Entry" : "Modify Book details"}
-                            </h3>
-                            <button 
-                                onClick={handleCloseModal} 
-                                style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {error && (
-                            <div className="alert alert-danger" style={{ padding: "0.6rem 1rem", fontSize: "0.85rem" }}>
-                                <span>{error}</span>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleFormSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="book-title">Book Title</label>
-                                <input
-                                    type="text"
-                                    id="book-title"
-                                    className="form-control"
-                                    placeholder="Enter book title"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="book-author">Author Name</label>
-                                <input
-                                    type="text"
-                                    id="book-author"
-                                    className="form-control"
-                                    placeholder="Enter author's name"
-                                    value={author}
-                                    onChange={(e) => setAuthor(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="book-category">Genre / Category</label>
-                                <input
-                                    type="text"
-                                    id="book-category"
-                                    className="form-control"
-                                    placeholder="e.g. Fiction, Science, Biography"
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="book-quantity">Quantity Available</label>
-                                <input
-                                    type="number"
-                                    id="book-quantity"
-                                    className="form-control"
-                                    min="0"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-                                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={handleCloseModal}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn" style={{ flex: 1 }} disabled={submitting}>
-                                    <span>{submitting ? "Saving..." : "Save Changes"}</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <BookModal 
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSuccess={handleModalSuccess}
+                mode={modalMode}
+                book={selectedBook}
+                token={user.token}
+            />
         </div>
     );
 };
